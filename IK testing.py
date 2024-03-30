@@ -24,8 +24,13 @@ def RTD(angle):
     while deg >= 360:
         deg -= 360
     return deg
+def DTR(angle):
+    deg = angle * (pi/180)
+    while deg >= 2*pi:
+        deg -= 2*pi
+    return deg
 
-def Check_MotorAngle(angles):
+def Check_MotorAngles(angles):
     ConstrainedAngles = []
     Checked_Angles = []
 
@@ -74,12 +79,12 @@ def IK(POS):
 
     H = sqrt(((D - Coxa)**2) + y**2)
 
-    #hip0 is the angle between H and the x-axis
-    #hip1 is the interior angle of Femur-Hip-H
-    Hip0 = RTD(asin(y/H))
-    print(H,"\n",(Tibia**2 - (Femur**2 + H**2 )) / (-2*Femur*H))
-    Hip1 = RTD(acos((Tibia**2 - (Femur**2 + H**2 )) / (-2*Femur*H)))
-    Hip = round((Hip0+Hip1),3)
+    #HipComp is the angle between H and the x-axis
+    #HipInr is the interior angle of Femur-Hip-H
+    HipComp = RTD(asin(y/H))
+    #print(H,"\n",(Tibia**2 - (Femur**2 + H**2 )) / (-2*Femur*H))
+    HipInr = RTD(acos((Tibia**2 - (Femur**2 + H**2 )) / (-2*Femur*H)))
+    Hip = round((HipComp+HipInr),3)
 
     #Solve for the Position of the knee with the hip to fix the polarity of its angle
     #creates a line for the femur to calulate positive of negative knee angles:
@@ -99,25 +104,53 @@ def IK(POS):
             return (slope*d)+intercept
         
     KneePos = round(Femur*RTD(cos(Hip))+Coxa,3),round(Femur*RTD(sin(Hip)),3)
-    print(KneePos)
+    #print(KneePos)
     KneeInterior = round(RTD(acos((H**2 - (Tibia**2 + Femur**2 )) / (-2*Tibia*Femur))),3)
-    print(round(FLP(pos,KneePos,"x"),3), round(FLP(pos,KneePos,"y"),3))
+    #print(round(FLP(pos,KneePos,"x"),3), round(FLP(pos,KneePos,"y"),3))
     if KneePos[0] < round(FLP(pos,KneePos,"x"),3):
         Knee = round(180 - (KneeInterior * -1),3)
-        print("reached, less than x")
+        #print("reached, less than x")
     elif KneePos[1] > round(FLP(pos,KneePos,"y"),3):
         Knee = round(180 - (KneeInterior * -1),3)
-        print("reached, greater than y") 
+        #print("reached, greater than y") 
     else:   
         Knee = 180 - KneeInterior
 
-    print (Pelvis,Hip, Knee, "\n")
-    return Pelvis, Hip, Knee
+    #print (Pelvis,Hip, Knee, "\n")
+    return (Pelvis, Hip, Knee)
+def FK(angles):
+    Pelvis, Hip, Knee = angles[0],angles[1],angles[2]
+    KneeInr = 180-Knee
+    '''organization:
+    - find the length of D
+    - find y
+    - solve z axis
+    '''
+    #length of H with law of cos
+    H = (sqrt((Femur**2 +Tibia**2)-2*Femur*Tibia*(cos(DTR(KneeInr)))))
+
+    #interior angle of the Hip with law of sin
+    HipInr = -(RTD(asin((sin(DTR(KneeInr))/H) * Tibia)))
+    HipComp = Hip - HipInr
+
+    #length of D
+    D = H * (cos(DTR(HipComp))) + Coxa
+
+    #find y
+    y = round((H * sin(DTR(HipComp))),3)
+
+    #solve z axis
+    x = round((D * cos(DTR(Pelvis))),3)
+    z = round((D * sin(DTR(Pelvis))),3)
+
+    return (x,y,z)
 
 
-pos = (9.483,0,0) #end affector
-angles = Check_MotorAngle(IK(pos))
+pos = (10,3,-11)
+angles = Check_MotorAngles(IK(pos))
 print(angles)
+newpos = FK(angles)
+print(newpos)
 
 print("\n\n")
 
