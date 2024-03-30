@@ -2,6 +2,7 @@ from math import sin,cos,asin,acos,atan,sqrt,degrees,radians,pi
 
 # variables
 RestPos = (0,0,0)     #(x,y,z)
+Lerp_Step = 2
 #OffSets = (Hip, Trechanter, Knee)
 Joint_Data = { 
     0 : (-45,90,"Pelvis"),
@@ -17,7 +18,6 @@ Tibia = 12.226
 
 
 # essential functions
-
 print("\n \n")
 def RTD(angle):
     deg = angle * (180/pi)
@@ -64,7 +64,6 @@ def Check_MotorAngles(angles):
         
 
     return Checked_Angles
-
 
 def IK(POS):
     x,y,z = POS[0],POS[1],POS[2]
@@ -145,12 +144,27 @@ def FK(angles):
 
     return (x,y,z)
 
+def interpolate(points):
+    def Pavg(point1,point2):
+        newpoint = []
+        for i in range(3):
+            avg = (point1[i] + point2[i])/2
+            newpoint.append(round(avg,3))
+        return newpoint
 
-pos = (10,3,-11)
-angles = Check_MotorAngles(IK(pos))
-print(angles)
-newpos = FK(angles)
-print(newpos)
+    def RepLerp(points):
+        Path = []   
+        for i in range(len(points)-1):
+            Path += [points[i],tuple(Pavg(points[i],points[i+1]))]
+        Path.append(points[-1])
+        return Path
+    
+    LerpPath = points
+    for loop in range(Lerp_Step):
+        LerpPath = RepLerp(LerpPath)
+
+    return LerpPath
+
 
 print("\n\n")
 
