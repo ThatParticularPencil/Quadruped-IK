@@ -1,0 +1,38 @@
+# ------------------------------------------
+# 
+# 	Project:      Write_to_Motor_Test
+#	Author:       Chinonso Ogwudu
+#	Created:      04|09|2024
+#	Description:  
+# 
+# ------------------------------------------
+
+# Library imports
+from math import sin,cos,tan,asin,acos,atan,sqrt,degrees,radians,pi
+
+# variables
+NeutralPos = (25,0,0)     #(x,y,z)
+JointVelocity = 10
+
+Coxa = 5.197
+Femur = 7.974
+Tibia = 12.226
+
+# essential functions
+
+#funcs
+print("\n \n")
+def RTD(angle):
+    deg = angle * (180/pi)
+    return deg
+def DTR(angle):
+    deg = angle * (pi/180)
+    return deg
+def Write_to_Motors():
+    pass
+
+Adjustments = (
+    (-5,7,0),
+    (-10,0,0),
+    (0,-14,0)
+)
